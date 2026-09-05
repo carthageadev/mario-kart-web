@@ -9,6 +9,7 @@ function App(){
  const initialFrame=Math.max(0,Math.min(88,Number(new URLSearchParams(location.search).get('frame'))||0));
  const [time,setTime]=useState(initialFrame/30);const [playing,setPlaying]=useState(!new URLSearchParams(location.search).has('frame')&&!matchMedia('(prefers-reduced-motion: reduce)').matches);
  const [mode,setMode]=useState<'replay'|'interactive'>('replay');const [selected,setSelected]=useState(2);
+ const [interaction,setInteraction]=useState<{id:number;index:number;type:'open'|'confirm'}>({id:0,index:2,type:'open'});
  const [players,setPlayers]=useState(DEFAULT_PLAYERS);const [settings,setSettings]=useState(false);
  const [compare,setCompare]=useState(false);const [split,setSplit]=useState(50);const [clean,setClean]=useState(new URLSearchParams(location.search).has('hud'));
  const [karts,setKarts]=useState(true);const [gloss,setGloss]=useState(1);const [speed,setSpeed]=useState(1);
@@ -16,7 +17,7 @@ function App(){
  const [reduced,setReduced]=useState(matchMedia('(prefers-reduced-motion: reduce)').matches);const [copied,setCopied]=useState(false);
  useEffect(()=>{if(!compare)return;const images=Array.from({length:89},(_,i)=>{const image=new Image();image.src=`./reference/${String(i).padStart(4,'0')}.webp`;return image;});return()=>{images.length=0;};},[compare]);
  const active=mode==='replay'?referenceSelected(time):selected;
- const choose=useCallback((i:number)=>{setSelected(i);setMode('interactive');setCompare(false);setPlaying(false);},[]);
+ const choose=useCallback((i:number)=>{setInteraction(event=>({id:event.id+1,index:i,type:mode==='interactive'&&i===selected?'confirm':'open'}));setSelected(i);setMode('interactive');setCompare(false);setPlaying(false);},[mode,selected]);
  useEffect(()=>{if(!playing)return;let id=0;let last=performance.now();function tick(now:number){const dt=Math.min((now-last)/1000,.05);last=now;if(!document.hidden)setTime(t=>(t+dt*speed)%DURATION);id=requestAnimationFrame(tick);}id=requestAnimationFrame(tick);return()=>cancelAnimationFrame(id);},[playing,speed]);
  useEffect(()=>{function key(e:KeyboardEvent){if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement)return;
   if(e.key===' '&&mode==='replay'){e.preventDefault();setPlaying(p=>!p);}if(e.key==='Escape'){setClean(false);setSettings(false);setCompare(false);}
@@ -28,7 +29,7 @@ function App(){
  return <div className={`app ${clean?'clean':''}`}>
   <header className="topbar">
    <div className="brand"><span className="brand-mark"><Flag size={19}/></span><span>RACE<span className="brand-light">ORDER</span><small>RACING INTERFACE / 01</small></span></div>
-   <nav className="mode-switch" aria-label="Preview mode"><button className={mode==='replay'?'active':''} onClick={()=>{setMode('replay');setTime(0);setPlaying(!reduced);}}>Source video</button><button className={mode==='interactive'?'active':''} onClick={()=>{setMode('interactive');setCompare(false);setPlaying(false);}}>Live UI</button></nav>
+   <nav className="mode-switch" aria-label="Preview mode"><button className={mode==='replay'?'active':''} onClick={()=>{setMode('replay');setTime(0);setPlaying(!reduced);}}>Source video</button><button className={mode==='interactive'?'active':''} onClick={()=>{setInteraction(event=>({id:event.id+1,index:selected,type:'open'}));setMode('interactive');setCompare(false);setPlaying(false);}}>Live UI</button></nav>
    <div className="top-actions"><button className={`icon-button ${settings?'active':''}`} aria-label="Customize interface" title="Customize interface" onClick={()=>setSettings(s=>!s)}><Settings2 size={18}/></button><button className="icon-button" aria-label="Enter clean HUD view" title="Clean HUD view" onClick={()=>setClean(true)}><Maximize2 size={18}/></button></div>
   </header>
   <main>
@@ -37,7 +38,7 @@ function App(){
     <div className="stage-corner top-left"/><div className="stage-corner bottom-right"/>
     <div className="stage-label"><span className="little-checker"/> {compare?'REFERENCE COMPARISON':'RACE POSITIONS'}<span>06 DRIVERS</span></div>
     <div className="board-wrap">
-     <RacingLeaderboard players={players} selectedIndex={active} onSelect={choose} time={time} replay={mode==='replay'} showKarts={karts} gloss={gloss} sheenStrength={sheenStrength} sheenOpacity={sheenOpacity} sheenColor={sheenColor} bloom={bloom} reducedMotion={reduced}/>
+     <RacingLeaderboard players={players} selectedIndex={active} onSelect={choose} interaction={interaction} time={time} replay={mode==='replay'} showKarts={karts} gloss={gloss} sheenStrength={sheenStrength} sheenOpacity={sheenOpacity} sheenColor={sheenColor} bloom={bloom} reducedMotion={reduced}/>
      {compare&&<><div className="reference-overlay" style={{clipPath:`inset(0 ${100-split}% 0 0)`}}><img src={`./reference/${String(Math.min(88,Math.floor(time*30))).padStart(4,'0')}.webp`} alt={`Original reference at frame ${Math.floor(time*30)}`}/></div><div className="compare-line" style={{left:`${split}%`}}><span><ArrowLeft size={12}/><ArrowRight size={12}/></span></div><input className="compare-slider" type="range" min="0" max="100" value={split} onChange={e=>setSplit(Number(e.target.value))} aria-label="Reference comparison divider"/><div className="compare-labels"><span>ORIGINAL</span><span>RECREATION</span></div></>}
     </div>
     <div className="stage-foot"><span><i/>{mode==='replay'?'SOURCE SEQUENCE':'LIVE INTERACTION'}<b>{mode==='replay'?'03 → 05 → 04':'CLICK A POSITION OR PRESS 1–6'}</b></span>{mode==='replay'?<button className={compare?'compare-button active':'compare-button'} onClick={()=>setCompare(c=>!c)}><span className="split-icon"/> {compare?'Exit comparison':'Compare source'}</button>:<span className="live-chip"><i/> WEBGL LIVE</span>}</div>
