@@ -52,7 +52,7 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
     const pulseX=1+confirmBounce*.075;const pulseY=1+confirmBounce*.055;
     plane.scale.set(pulseX,pulseY,1);
     const anchor=20+120*e;const bounceX=(anchor-300)*(1-pulseX);plane.position.x=300+bounceX;
-    const row=rows.current[i];if(row){row.style.setProperty('--open',String(e));row.style.setProperty('--anchor',`${anchor}px`);row.style.setProperty('--bounce-x',`${bounceX}px`);row.style.setProperty('--pulse-x',String(pulseX));row.style.setProperty('--pulse-y',String(pulseY));row.style.width=`${90+e*475}px`;}
+    const row=rows.current[i];if(row){row.style.setProperty('--open',String(e));row.style.setProperty('--anchor',`${anchor}px`);row.style.setProperty('--label-inset',`${20-4*Math.max(0,Math.min(1,e))}px`);row.style.setProperty('--bounce-x',`${bounceX}px`);row.style.setProperty('--pulse-x',String(pulseX));row.style.setProperty('--pulse-y',String(pulseY));row.style.width=`${90+e*475}px`;}
     const kart=karts[i];kart.visible=e>.015&&(p.showKarts??true);kart.scale.setScalar(.9*e*(1+confirmBounce*.055));
     (kart.userData.paint as THREE.MeshStandardMaterial).color.set(c);
     const spin=p.reducedMotion?0:(p.replay?p.time:renderLiveClock);
