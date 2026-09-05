@@ -4,6 +4,5 @@
 .player-name{top:8px}
 .player-name,.position-number{font-family:'Rodin',Arial,Helvetica,sans-serif;font-weight:800}
 .rank-row{transform-origin:var(--anchor,140px) 42px}
-.rank-row{--text-scale-x:1;--text-scale-y:1}
 .rank-row{--bounce-x:0px;transform-origin:300px 42px;transform:translate3d(var(--bounce-x),0,0) scaleX(var(--pulse-x)) scaleY(var(--pulse-y))}
-.player-name{left:calc(var(--anchor,140px) + 14px);transform-origin:0 0;transform:scaleX(var(--text-scale-x)) scaleY(var(--text-scale-y))}
+.player-name{left:calc(var(--anchor,140px) + 14px);transform:none}
