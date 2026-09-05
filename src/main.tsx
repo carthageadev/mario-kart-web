@@ -2,7 +2,7 @@ import React,{useCallback,useEffect,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ArrowLeft,ArrowRight,Check,ChevronDown,Code2,Flag,Maximize2,Minimize2,Pause,Play,RotateCcw,Settings2,SkipBack,SkipForward,X} from 'lucide-react';
 import {RacingLeaderboard} from './RacingLeaderboard';
-import {DEFAULT_PLAYERS,DURATION,referenceSelected} from './timeline';
+import {DEFAULT_PLAYERS,DURATION,FIXED_STEP,MAX_FIXED_STEPS,referenceSelected} from './timeline';
 import './styles.css';
 
 function App(){
@@ -19,7 +19,7 @@ function App(){
  useEffect(()=>{if(!compare||!referenceAvailable)return;const images=Array.from({length:89},(_,i)=>{const image=new Image();image.src=`./reference/${String(i).padStart(4,'0')}.webp`;return image;});return()=>{images.length=0;};},[compare,referenceAvailable]);
  const active=mode==='replay'?referenceSelected(time):selected;
  const choose=useCallback((i:number)=>{setInteraction(event=>({id:event.id+1,index:i,type:mode==='interactive'&&i===selected?'confirm':'open'}));setSelected(i);setMode('interactive');setCompare(false);setPlaying(false);},[mode,selected]);
- useEffect(()=>{if(!playing)return;let id=0;let last=performance.now();function tick(now:number){const dt=Math.min((now-last)/1000,.05);last=now;if(!document.hidden)setTime(t=>(t+dt*speed)%DURATION);id=requestAnimationFrame(tick);}id=requestAnimationFrame(tick);return()=>cancelAnimationFrame(id);},[playing,speed]);
+ useEffect(()=>{if(!playing)return;let id=0;let last=performance.now();let accumulator=0;function tick(now:number){if(document.hidden){last=now;accumulator=0;}else{accumulator+=Math.min((now-last)/1000,.25);last=now;let steps=0;while(accumulator>=FIXED_STEP&&steps<MAX_FIXED_STEPS){accumulator-=FIXED_STEP;steps++;}if(steps===MAX_FIXED_STEPS)accumulator=0;if(steps>0)setTime(t=>(t+steps*FIXED_STEP*speed)%DURATION);}id=requestAnimationFrame(tick);}id=requestAnimationFrame(tick);return()=>cancelAnimationFrame(id);},[playing,speed]);
  useEffect(()=>{function key(e:KeyboardEvent){if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement)return;
   if(e.key===' '&&mode==='replay'){e.preventDefault();setPlaying(p=>!p);}if(e.key==='Escape'){setClean(false);setSettings(false);setCompare(false);}
   if(/^[1-6]$/.test(e.key))choose(Number(e.key)-1);

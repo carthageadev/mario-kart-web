@@ -1,4 +1,6 @@
 import motion from './reference-motion.json';
+export const FIXED_STEP=1/60;
+export const MAX_FIXED_STEPS=8;
 export const DURATION=89/30;
 export const DEFAULT_PLAYERS=[
  {id:'p4',name:'Player 4',color:'#d60075'},
