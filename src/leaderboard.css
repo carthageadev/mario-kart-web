@@ -5,4 +5,5 @@
 .player-name,.position-number{font-family:'Rodin',Arial,Helvetica,sans-serif;font-weight:800}
 .rank-row{transform-origin:var(--anchor,140px) 42px}
 .rank-row{--text-shift-x:0px;--text-shift-y:0px;--text-scale-x:1;--text-scale-y:1}
-.player-name{left:calc(var(--anchor,140px) + 24px);transform-origin:-24px 34px;transform:translate3d(var(--text-shift-x),var(--text-shift-y),0) scaleX(var(--text-scale-x)) scaleY(var(--text-scale-y))}
+.rank-row{--bounce-x:0px;transform-origin:300px 42px;transform:translate3d(var(--bounce-x),0,0) scaleX(var(--pulse-x)) scaleY(var(--pulse-y))}
+.player-name{left:calc(var(--anchor,140px) + 32px);transform-origin:-32px 34px;transform:translate3d(var(--text-shift-x),var(--text-shift-y),0) scaleX(var(--text-scale-x)) scaleY(var(--text-scale-y))}
