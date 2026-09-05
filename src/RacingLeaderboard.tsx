@@ -42,8 +42,10 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
     const sheenHex=p.sheenColor??'#dce8ff';u.uSheenColor.value.set(parseInt(sheenHex.slice(1,3),16)/255,parseInt(sheenHex.slice(3,5),16)/255,parseInt(sheenHex.slice(5,7),16)/255);
     const liveClock=now/1000;
     // Live UI is a repeated positional sweep: every pass travels right → left.
-    const liveLoop=(liveClock/0.82)%1;
-    u.uShine.value=p.replay?(p.time>2.13&&p.time<2.55?(p.time-2.13)/.42:-2):(1-liveLoop);
+    const wooshPhase=liveClock%4.8;
+    const wooshDuration=.28;
+    const liveWoosh=wooshPhase<wooshDuration?1-wooshPhase/wooshDuration:-2;
+    u.uShine.value=p.replay?(p.time>2.13&&p.time<2.55?(p.time-2.13)/.42:-2):(p.reducedMotion?-2:liveWoosh);
     const row=rows.current[i];if(row){row.style.setProperty('--open',String(e));row.style.width=`${90+e*475}px`;}
     const kart=karts[i];kart.visible=e>.015&&(p.showKarts??true);kart.scale.setScalar(.9*e);
     (kart.userData.paint as THREE.MeshStandardMaterial).color.set(c);
@@ -59,7 +61,7 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
   return()=>{cancelAnimationFrame(raf);resize.disconnect();scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});renderer.dispose();renderer.domElement.remove();};
  },[]);
  const bloomValue=props.bloom??.45;
- return <div className={`leaderboard ${fallback?'fallback':''}`} ref={host} aria-label="Race positions" style={{'--bloom-radius':`${4+bloomValue*10}px`,'--bloom-alpha':`${.04+bloomValue*.12}`} as React.CSSProperties}>
+ return <div className={`leaderboard ${fallback?'fallback':''}`} ref={host} aria-label="Race positions" style={{'--bloom-radius':`${bloomValue*16}px`,'--bloom-alpha':`${bloomValue*.22}`,'--bloom-tight-radius':`${bloomValue*6}px`,'--bloom-tight-alpha':`${bloomValue*.26}`} as React.CSSProperties}>
   <div className="row-layer">{props.players.map((p,i)=><button ref={e=>{rows.current[i]=e;}} type="button" className={`rank-row ${i===props.selectedIndex?'is-selected':''}`} style={{top:7+i*89.4,'--accent':p.color,...(fallback?{'--open':i===props.selectedIndex?1:0,width:i===props.selectedIndex?565:90}:{})} as React.CSSProperties} aria-label={`Position ${i+1}, ${p.name}`} aria-pressed={i===props.selectedIndex} key={p.id} onClick={()=>props.onSelect(i)}>
    <span className="fallback-plate"/><span className="player-name">{p.name}</span><span className="position-number">{i+1}</span>
   </button>)}</div>

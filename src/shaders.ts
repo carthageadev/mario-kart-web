@@ -43,9 +43,11 @@ void main(){
   }
  }
  float sheenCenter=right-420.+uShine*640.;
- float shine=exp(-pow((q.x-sheenCenter)/48.,2.));
- float sheenHalo=exp(-pow((q.x-sheenCenter)/25.,2.));
- float sheenEdge=exp(-pow((q.x-(sheenCenter-15.))/8.5,2.));
+ float sheenDistance=q.x-sheenCenter;
+ float sheenShape=.72+.28*smoothstep(5.,18.,p.y)*(1.-smoothstep(70.,83.,p.y));
+ float shine=exp(-pow(abs(sheenDistance)/48.,1.5))*sheenShape;
+ float sheenHalo=exp(-pow(abs(sheenDistance)/25.,1.35))*sheenShape;
+ float sheenEdge=exp(-pow(abs(sheenDistance+15.)/8.5,1.25))*sheenShape;
  vec3 sheenTint=mix(vec3(1.0),uSheenColor,.72);
  float sheenAmount=uSheenStrength*uSheenOpacity;
  col+=sheenTint*shine*e*uGloss*.72*sheenAmount;
