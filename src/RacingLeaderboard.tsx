@@ -1,0 +1,67 @@
+import {useEffect,useRef,useState} from 'react';
+import * as THREE from 'three';
+import {createKart} from './kart';
+import {fragmentShader,vertexShader} from './shaders';
+import {referenceOpenness,type Racer} from './timeline';
+import './leaderboard.css';
+
+export interface RacingLeaderboardProps {
+ players:Racer[]; selectedIndex:number; onSelect:(index:number)=>void;
+ time:number; replay:boolean; showKarts?:boolean; gloss?:number; reducedMotion?:boolean;
+ sheenStrength?:number; sheenOpacity?:number; sheenColor?:string; bloom?:number;
+}
+export function RacingLeaderboard(props:RacingLeaderboardProps){
+ const host=useRef<HTMLDivElement>(null);const current=useRef(props);current.current=props;
+ const rows=useRef<(HTMLButtonElement|null)[]>([]);const [fallback,setFallback]=useState(false);
+ useEffect(()=>{
+  const el=host.current!;let renderer:THREE.WebGLRenderer;
+  try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'high-performance'});}catch{setFallback(true);return;}
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.setClearColor(0,0);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.domElement.setAttribute('aria-hidden','true');el.prepend(renderer.domElement);
+  const scene=new THREE.Scene();const camera=new THREE.OrthographicCamera(0,600,550,0,.1,2000);camera.position.z=900;
+  scene.add(new THREE.AmbientLight(0xffffff,2.1));
+  const key=new THREE.DirectionalLight(0xffffff,3.5);key.position.set(-100,600,700);scene.add(key);
+  const fill=new THREE.DirectionalLight(0x6495ff,2);fill.position.set(300,0,200);scene.add(fill);
+  const planes:THREE.Mesh<THREE.PlaneGeometry,THREE.ShaderMaterial>[]=[];const karts:THREE.Group[]=[];
+  for(let i=0;i<6;i++){
+   const material=new THREE.ShaderMaterial({vertexShader,fragmentShader,transparent:true,depthWrite:false,uniforms:{uOpen:{value:0},uColor:{value:new THREE.Vector3()},uShine:{value:-1},uGloss:{value:1},uSheenStrength:{value:1},uSheenOpacity:{value:.86},uSheenColor:{value:new THREE.Vector3(0.82,.88,1)},uBloom:{value:.45}}});
+   const plane=new THREE.Mesh(new THREE.PlaneGeometry(600,88),material);plane.position.set(300,550-7-i*89.4-44,0);scene.add(plane);planes.push(plane);
+   const kart=createKart(current.current.players[i].color);kart.position.set(88,550-50-i*89.4,70);scene.add(kart);karts.push(kart);
+  }
+  const resize=new ResizeObserver(()=>{renderer.setSize(el.clientWidth,el.clientHeight,false);const layer=el.querySelector<HTMLElement>('.row-layer');if(layer)layer.style.transform=`scale(${el.clientWidth/600})`;});resize.observe(el);
+  let raf=0,last=performance.now();let opens=referenceOpenness(current.current.time);
+  function frame(now:number){
+   const dt=Math.min((now-last)/1000,.05);last=now;const p=current.current;
+   const targets=p.replay?referenceOpenness(p.time):p.players.map((_,i)=>i===p.selectedIndex?1:0);
+   opens=opens.map((v,i)=>p.replay||p.reducedMotion?targets[i]:THREE.MathUtils.lerp(v,targets[i],1-Math.exp(-dt*19)));
+   planes.forEach((plane,i)=>{
+    const e=opens[i];const u=plane.material.uniforms;u.uOpen.value=e;
+    const c=p.players[i].color;u.uColor.value.set(parseInt(c.slice(1,3),16)/255,parseInt(c.slice(3,5),16)/255,parseInt(c.slice(5,7),16)/255);
+    u.uGloss.value=p.gloss??1;
+    u.uSheenStrength.value=p.sheenStrength??1;u.uSheenOpacity.value=p.sheenOpacity??.86;u.uBloom.value=p.bloom??.45;
+    const sheenHex=p.sheenColor??'#dce8ff';u.uSheenColor.value.set(parseInt(sheenHex.slice(1,3),16)/255,parseInt(sheenHex.slice(3,5),16)/255,parseInt(sheenHex.slice(5,7),16)/255);
+    const liveClock=now/1000;
+    // Live UI is a repeated positional sweep: every pass travels right → left.
+    const liveLoop=(liveClock/0.82)%1;
+    u.uShine.value=p.replay?(p.time>2.13&&p.time<2.55?(p.time-2.13)/.42:-2):(1-liveLoop);
+    const row=rows.current[i];if(row){row.style.setProperty('--open',String(e));row.style.width=`${90+e*475}px`;}
+    const kart=karts[i];kart.visible=e>.015&&(p.showKarts??true);kart.scale.setScalar(.9*e);
+    (kart.userData.paint as THREE.MeshStandardMaterial).color.set(c);
+    const spin=p.reducedMotion?0:(p.replay?p.time:liveClock);
+    kart.rotation.set(.48,-.88+Math.sin(spin*2.8+i*.4)*.23,-.15+Math.sin(spin*2)*.04);
+    if(i===3&&spin>2.12&&spin<2.6)kart.rotation.y+=(spin-2.12)/.48*Math.PI*2;
+    kart.position.x=48+e*42;
+   });
+   if(!document.hidden)renderer.render(scene,camera);raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+  const lost=(e:Event)=>{e.preventDefault();setFallback(true);};renderer.domElement.addEventListener('webglcontextlost',lost);
+  return()=>{cancelAnimationFrame(raf);resize.disconnect();scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});renderer.dispose();renderer.domElement.remove();};
+ },[]);
+ const bloomValue=props.bloom??.45;
+ return <div className={`leaderboard ${fallback?'fallback':''}`} ref={host} aria-label="Race positions" style={{'--bloom-radius':`${4+bloomValue*10}px`,'--bloom-alpha':`${.04+bloomValue*.12}`} as React.CSSProperties}>
+  <div className="row-layer">{props.players.map((p,i)=><button ref={e=>{rows.current[i]=e;}} type="button" className={`rank-row ${i===props.selectedIndex?'is-selected':''}`} style={{top:7+i*89.4,'--accent':p.color,...(fallback?{'--open':i===props.selectedIndex?1:0,width:i===props.selectedIndex?565:90}:{})} as React.CSSProperties} aria-label={`Position ${i+1}, ${p.name}`} aria-pressed={i===props.selectedIndex} key={p.id} onClick={()=>props.onSelect(i)}>
+   <span className="fallback-plate"/><span className="player-name">{p.name}</span><span className="position-number">{i+1}</span>
+  </button>)}</div>
+ </div>;
+}
