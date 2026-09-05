@@ -4,3 +4,5 @@
 .player-name{top:8px}
 .player-name,.position-number{font-family:'Rodin',Arial,Helvetica,sans-serif;font-weight:800}
 .rank-row{transform-origin:var(--anchor,140px) 42px}
+.rank-row{--text-shift-x:0px;--text-shift-y:0px;--text-scale-x:1;--text-scale-y:1}
+.player-name{left:calc(var(--anchor,140px) + 12px);transform-origin:-12px 34px;transform:translate3d(var(--text-shift-x),var(--text-shift-y),0) scaleX(var(--text-scale-x)) scaleY(var(--text-scale-y))}
