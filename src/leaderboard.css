@@ -5,4 +5,4 @@
 .player-name,.position-number{font-family:'Rodin',Arial,Helvetica,sans-serif;font-weight:800}
 .rank-row{transform-origin:var(--anchor,140px) 42px}
 .rank-row{--bounce-x:0px;transform-origin:300px 44px;transform:translate3d(var(--bounce-x),0,0) scaleX(var(--pulse-x)) scaleY(var(--pulse-y))}
-.player-name{left:calc(var(--anchor,140px) + 14px);transform:none}
+.player-name{left:calc(var(--anchor,140px) + 20px);transform:none}
