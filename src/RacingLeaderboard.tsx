@@ -41,7 +41,6 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
     u.uSheenStrength.value=p.sheenStrength??1;u.uSheenOpacity.value=p.sheenOpacity??.86;u.uBloom.value=p.bloom??.45;
     const sheenHex=p.sheenColor??'#dce8ff';u.uSheenColor.value.set(parseInt(sheenHex.slice(1,3),16)/255,parseInt(sheenHex.slice(3,5),16)/255,parseInt(sheenHex.slice(5,7),16)/255);
     const liveClock=now/1000;
-    // Live UI is a repeated positional sweep: every pass travels right → left.
     const wooshPhase=liveClock%4.8;
     const wooshDuration=.28;
     const liveWoosh=wooshPhase<wooshDuration?1-wooshPhase/wooshDuration:-2;
@@ -62,8 +61,9 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
  },[]);
  const bloomValue=props.bloom??.45;
  return <div className={`leaderboard ${fallback?'fallback':''}`} ref={host} aria-label="Race positions" style={{'--bloom-radius':`${bloomValue*16}px`,'--bloom-alpha':`${bloomValue*.22}`,'--bloom-tight-radius':`${bloomValue*6}px`,'--bloom-tight-alpha':`${bloomValue*.26}`} as React.CSSProperties}>
-  <div className="row-layer">{props.players.map((p,i)=><button ref={e=>{rows.current[i]=e;}} type="button" className={`rank-row ${i===props.selectedIndex?'is-selected':''}`} style={{top:7+i*89.4,'--accent':p.color,...(fallback?{'--open':i===props.selectedIndex?1:0,width:i===props.selectedIndex?565:90}:{})} as React.CSSProperties} aria-label={`Position ${i+1}, ${p.name}`} aria-pressed={i===props.selectedIndex} key={p.id} onClick={()=>props.onSelect(i)}>
-   <span className="fallback-plate"/><span className="player-name">{p.name}</span><span className="position-number">{i+1}</span>
-  </button>)}</div>
+  <div className="row-layer">{props.players.map((p,i)=>{const nameSize=Math.max(17,Math.min(34,235/Math.max(p.name.length*.65,1)));return <button ref={e=>{rows.current[i]=e;}} type="button" className={`rank-row ${i===props.selectedIndex?'is-selected':''}`} style={{top:7+i*89.4,'--accent':p.color,...(fallback?{'--open':i===props.selectedIndex?1:0,width:i===props.selectedIndex?565:90}:{})} as React.CSSProperties} aria-label={`Position ${i+1}, ${p.name}`} title={`Position ${i+1}: ${p.name}`} aria-pressed={i===props.selectedIndex} key={p.id} onClick={()=>props.onSelect(i)}>
+   <span className="fallback-plate"/><span className="player-name" style={{fontSize:`${nameSize}px`}}>{p.name}</span><span className="position-number">{i+1}</span>
+  </button>})}
+  </div>
  </div>;
 }
