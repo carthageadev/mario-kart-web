@@ -3,3 +3,4 @@
 .position-number{left:calc(28px + var(--open)*456px);width:38px;top:22px;font-size:36px;font-weight:900;font-stretch:expanded;letter-spacing:-.5px;transform:translateX(-8px) scaleX(1.08);transform-origin:center}
 .player-name{top:8px}
 .player-name,.position-number{font-family:'Rodin',Arial,Helvetica,sans-serif;font-weight:800}
+.rank-row{transform-origin:140px 42px}

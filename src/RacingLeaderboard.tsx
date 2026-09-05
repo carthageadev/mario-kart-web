@@ -55,6 +55,7 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
     const openBounce=opening?.index===i?openingPulse:0;const confirmBounce=confirmation?.index===i?confirmationPulse:0;
     const pulseX=1+openBounce*.045+confirmBounce*.075;const pulseY=1-openBounce*.035+confirmBounce*.055;
     plane.scale.set(pulseX,pulseY,1);
+    const anchor=20+120*e;plane.position.x=300+(anchor-300)*(1-pulseX);
     const row=rows.current[i];if(row){row.style.setProperty('--open',String(e));row.style.setProperty('--pulse-x',String(pulseX));row.style.setProperty('--pulse-y',String(pulseY));row.style.width=`${90+e*475}px`;}
     const kart=karts[i];kart.visible=e>.015&&(p.showKarts??true);kart.scale.setScalar(.9*e*(1+confirmBounce*.055));
     (kart.userData.paint as THREE.MeshStandardMaterial).color.set(c);
