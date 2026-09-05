@@ -16,7 +16,7 @@ export function referenceOpenness(time:number){
 }
 const openingCurve=motion.slice(11,34).map(frame=>frame[4]);
 export function liveOpening(time:number){
- const frame=Math.max(0,Math.min(openingCurve.length-1,time*60));const index=Math.floor(frame);const fraction=frame-index;
+ const frame=Math.max(0,Math.min(openingCurve.length-1,time*30));const index=Math.floor(frame);const fraction=frame-index;
  return openingCurve[index]+(openingCurve[Math.min(index+1,openingCurve.length-1)]-openingCurve[index])*fraction;
 }
 export function referenceSelected(time:number){return time<13/30?2:time<34/30?4:3;}
