@@ -1,16 +1,18 @@
 import {useEffect,useRef} from 'react';
 import * as THREE from 'three';
-import {Shield,Timer,Trophy,UsersRound,type LucideIcon} from 'lucide-react';
 import {createKart} from './kart';
 import {fragmentShader,vertexShader} from './shaders';
 import {confirmationMotion,FIXED_STEP,MAX_FIXED_STEPS,liveOpening} from './timeline';
 export type MenuSymbol='cup'|'coin'|'gear'|'kart';
 export type MenuBadge='trophy'|'players'|'timer'|'battle';
 const menuFragment=fragmentShader.replace('col=mix(col,accent,stripe);','col=mix(col,vec3(.12,.13,.16),stripe);');
-const menuBadgeIcons:Record<MenuBadge,LucideIcon>={trophy:Trophy,players:UsersRound,timer:Timer,battle:Shield};
 function MenuBadgeIcon({kind}:{kind:MenuBadge}){
- const Icon=menuBadgeIcons[kind];
- return <Icon className="ro-menu-badge-icon" aria-hidden="true" strokeWidth={3}/>;
+ return <svg className="ro-menu-badge-icon" viewBox="0 0 40 40" aria-hidden="true">
+  {kind==='trophy'&&<path d="M12 6h16v3h5v5a9 9 0 0 1-8 8.9V26h5v4H10v-4h5v-3.1A9 9 0 0 1 7 14V9h5V6Zm-4 6v1c0 2.3 1.4 4.1 3.4 4.8L10 12H8Zm24 0h-2l-1.4 5.8c2-.7 3.4-2.5 3.4-4.8v-1ZM15 10v4.5c0 3 2.2 5.5 5 5.5s5-2.5 5-5.5V10H15Z"/>}
+  {kind==='players'&&<><circle cx="15" cy="14" r="6"/><circle cx="27" cy="15" r="5"/><path d="M4 34c0-7 4.5-12 11-12s11 5 11 12H4Zm18 0c0-4-1-7-4-9 2-2 4-3 7-3 5 0 9 4 9 12H22Z"/></>}
+  {kind==='timer'&&<><path d="M15 4h10v4h-3v2.1a14 14 0 1 1-4 0V8h-3V4Zm5 7a11 11 0 1 0 0 22 11 11 0 0 0 0-22Z" fillRule="evenodd"/><path d="M18 21h4v-6h-3v4h-1v2Z" fill="#fff"/></>}
+  {kind==='battle'&&<path d="m20 4 13 5v9c0 8-5 14-13 18C12 32 7 26 7 18V9l13-5Zm0 6-7 3v5c0 5 2 9 7 12 5-3 7-7 7-12v-5l-7-3Zm-2 4h4v4h4v4h-4v4h-4v-4h-4v-4h4v-4Z"/>}
+ </svg>;
 }
 function symbol(kind:MenuSymbol,color:string){
  if(kind==='kart'){const k=createKart(color);k.scale.setScalar(.65);return k;}
