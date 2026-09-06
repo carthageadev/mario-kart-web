@@ -22,3 +22,7 @@ export function liveOpening(time:number){
  return openingCurve[index]+(openingCurve[Math.min(index+1,openingCurve.length-1)]-openingCurve[index])*fraction;
 }
 export function referenceSelected(time:number){return time<13/30?2:time<34/30?4:3;}
+export function confirmationMotion(age:number){
+ const t=Math.max(0,Math.min(1,age/.72));
+ return {active:t<1,pulse:t<1?-Math.sin(t*Math.PI*4)*Math.pow(1-t,1.25):0,sweep:t*t*(3-2*t)};
+}

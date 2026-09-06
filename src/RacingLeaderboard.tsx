@@ -2,7 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import * as THREE from 'three';
 import {createKart} from './kart';
 import {fragmentShader,vertexShader} from './shaders';
-import {FIXED_STEP,liveOpening,MAX_FIXED_STEPS,referenceOpenness,type Racer} from './timeline';
+import {confirmationMotion,FIXED_STEP,liveOpening,MAX_FIXED_STEPS,referenceOpenness,type Racer} from './timeline';
 import './leaderboard.css';
 
 export interface RacingLeaderboardProps {
@@ -37,8 +37,8 @@ export function RacingLeaderboard(props:RacingLeaderboardProps){
    if(p.interaction&&p.interaction.id!==handledInteraction){handledInteraction=p.interaction.id;if(!p.reducedMotion){if(p.interaction.type==='confirm'){confirmation={index:p.interaction.index};confirmationAge=0;opening=null;openingAge=2;}else{opening={index:p.interaction.index};openingAge=0;confirmation=null;confirmationAge=2;}}}
    if(document.hidden){last=now;accumulator=0;}else{accumulator+=Math.min((now-last)/1000,.25);last=now;let steps=0;while(accumulator>=FIXED_STEP&&steps<MAX_FIXED_STEPS){accumulator-=FIXED_STEP;previousOpens=opens.slice();liveClock+=FIXED_STEP;if(opening){openingAge+=FIXED_STEP;if(openingAge>.7){opening=null;openingAge=2;}}else openingAge=2;if(confirmation){confirmationAge+=FIXED_STEP;if(confirmationAge>.78){confirmation=null;confirmationAge=2;}}else confirmationAge=2;const targets=p.replay?referenceOpenness(p.time):p.players.map((_,i)=>i===p.selectedIndex?1:0);opens=opens.map((v,i)=>p.replay||p.reducedMotion?targets[i]:THREE.MathUtils.lerp(v,targets[i],1-Math.exp(-FIXED_STEP*19)));steps++;}if(steps===MAX_FIXED_STEPS)accumulator=0;}
    const alpha=document.hidden?0:Math.max(0,Math.min(1,accumulator/FIXED_STEP));const targets=p.replay?referenceOpenness(p.time):p.players.map((_,i)=>i===p.selectedIndex?1:0);const displayOpens=p.replay||p.reducedMotion?targets:opens.map((v,i)=>previousOpens[i]+(v-previousOpens[i])*alpha);const renderLiveClock=liveClock+FIXED_STEP*alpha;const renderOpeningAge=opening?openingAge+FIXED_STEP*alpha:2;const renderConfirmationAge=confirmation?confirmationAge+FIXED_STEP*alpha:2;const confirmationT=Math.max(0,Math.min(1,renderConfirmationAge/.72));
-   const confirmationPulse=confirmation&&!p.replay&&confirmationT<1?-Math.sin(confirmationT*Math.PI*4)*Math.pow(1-confirmationT,1.25):0;
-   const confirmationActive=Boolean(confirmation&&confirmationT<1&&!p.reducedMotion&&!p.replay);const confirmationSweep=confirmationT*confirmationT*(3-2*confirmationT);
+   const confirmationPulse=confirmation&&!p.replay?confirmationMotion(renderConfirmationAge).pulse:0;
+   const confirmationActive=Boolean(confirmation&&confirmationT<1&&!p.reducedMotion&&!p.replay);const confirmationSweep=confirmationMotion(renderConfirmationAge).sweep;
    const wooshPhase=renderLiveClock%4.8;const wooshDuration=.28;const liveWoosh=wooshPhase<wooshDuration?1-wooshPhase/wooshDuration:-2;
    planes.forEach((plane,i)=>{
     const motionOpen=opening&&!p.replay&&!p.reducedMotion&&opening.index===i?liveOpening(renderOpeningAge):displayOpens[i];const e=Math.max(0,Math.min(1.065,motionOpen));const u=plane.material.uniforms;u.uOpen.value=e;

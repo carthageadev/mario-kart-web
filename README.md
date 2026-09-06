@@ -25,8 +25,10 @@ The component is reusable: pass `players`, `selectedIndex`, `onSelect`, `showKar
 
 ## Game menu
 
-Open `/game` for the menu mockup. Up and Down select modes. Left and Right choose 1P to 4P on Multiplayer. A or Enter confirms. B or Escape goes back.
+Open `/game` for the menu mockup. Arrow keys move the persistent focus across menus and grids. Left and Right choose 1P to 4P on Multiplayer. A or Enter confirms. B or Escape goes back. Standard-mapped gamepads use the D-pad or left stick, button 0 to confirm, and button 1 to go back. Hover transfers focus to the pointed option.
 
-The menu reuses the leaderboard shader and sampled opening curve. White checker wipes cover page changes. Cup selection, course selection, settings, and a race preview are interactive. Garage is a stub. Multiplayer stores a player count; it does not run a multiplayer game.
+The menu uses the leaderboard shader geometry, sampled opening curve, fixed-step interpolation, and shared confirmation pulse. Only the selected mode shows its spinning 3D icon. Confirmation holds for 720 ms so the blue sweep and pulse finish before the white checker wipe. Reduced motion skips the delay and animation.
+
+Character selection uses a 12-racer grid and live 3D preview. Kart selection provides body, tire, and glider columns; choices carry into the race summary. Battle has arena and rule selection, and Time Trial has its own timer presentation. Garage, MKTV, and amiibo are stubs. This remains a UI mockup: setup edits player one, multiplayer stores the player count, stats and tracks are illustrative, and gameplay is not connected.
 
 The temporary backdrop and course thumbnails reference a Mario Kart 8 Deluxe screenshot hosted by [Game UI Database](https://www.gameuidatabase.com/uploads/MarioKart8Deluxe04222020-114642.jpg). This third-party reference image is loaded remotely and is not bundled in the repository. Replace it with original game art for release. Screen layouts were studied at [Game UI Database](https://www.gameuidatabase.com/gameData.php?id=83&autoload=846). Models and menu materials are generated in code.
